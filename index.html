@@ -1,80 +1,13 @@
-<!doctype html>
-<html lang="da">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
-<title>Væskeberegning – perioperativ beregner</title>
-<style>
-:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#192c3b;background:#f3f7fa;font-variant-numeric:tabular-nums}*{box-sizing:border-box}body{margin:0}main{max-width:1120px;margin:auto;padding:38px 20px 60px}header{margin-bottom:22px}h1{font-size:clamp(1.8rem,3.6vw,2.55rem);letter-spacing:-.04em;margin:0 0 8px}h2{font-size:1.13rem;margin:0 0 18px}p{line-height:1.55}.sub{color:#5f7181;margin:0}.layout{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}.card{background:#fff;border:1px solid #dce7ee;border-radius:16px;padding:25px;box-shadow:0 5px 20px #132f4a08}.field{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:14px 0}.field label{font-size:.94rem;line-height:1.4;max-width:66%}.field input{width:135px;min-width:110px;border:1px solid #bacbd7;background:#fff;border-radius:8px;padding:10px 10px;text-align:right;font:inherit;color:#12263a}.field input:focus{outline:3px solid #cbe6f2;border-color:#1583a7}.note{font-size:.83rem;color:#587081;margin:5px 0 13px}.group{border-top:1px solid #e5edf1;padding-top:17px;margin-top:17px}.result{display:flex;justify-content:space-between;gap:18px;padding:11px 0;border-bottom:1px solid #eaf0f4;align-items:baseline}.result:last-child{border:0}.result span:first-child{font-size:.92rem}.result strong{white-space:nowrap;text-align:right}.primary{padding:19px;border-radius:12px;background:#eaf7fa;border:1px solid #bde6ed;margin-bottom:14px}.primary .value{font-weight:750;font-size:clamp(1.6rem,4vw,2.15rem);color:#006d84;margin:7px 0 5px}.primary .hint{font-size:.82rem;color:#426a78}.metric{color:#4b6779;font-size:.76rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.warning{background:#fff5e5;border:1px solid #f0cf95;color:#765016;padding:13px 16px;border-radius:10px;margin:16px 0;font-size:.9rem;line-height:1.45}.hidden{display:none}.assumptions{margin-top:22px}.assumptions li{margin:9px 0;line-height:1.5}.toolbar{display:flex;justify-content:flex-end;margin:14px 0}.toolbar button{background:#fff;border:1px solid #c7d5df;border-radius:8px;padding:10px 16px;color:#174358;cursor:pointer;font-weight:600}.toolbar button:hover{background:#e7f2f6}.foot{font-size:.86rem;color:#617483;margin-top:18px}.sign.negative{color:#a24220}.sign.positive{color:#08775e}@media(max-width:730px){.layout{grid-template-columns:1fr}main{padding:26px 13px}.card{padding:20px}.field input{width:115px;min-width:98px}.field label{max-width:62%}}
-</style>
-</head>
-<body><main>
-<header><h1>Væskeberegning</h1><p class="sub">Perioperativ beregning af blodvolumen, hæmatokrit og mulig uregistreret væskeforskydning.</p></header>
-<div class="toolbar"><button id="reset" type="button">Nulstil til eksempelværdier</button></div>
-<div class="layout"><section class="card"><h2>Indtast værdier</h2>
-<div class="field"><label for="idealWeight">Idealvægt (kg)</label><input id="idealWeight" type="text" inputmode="decimal" value="80" aria-describedby="weight-note"></div>
-<p id="weight-note" class="note">Anvendes til estimeret præoperativt blodvolumen (60 mL/kg).</p>
-<div class="field"><label for="hctBefore">Hæmatokrit før anæstesi (kommatal)</label><input id="hctBefore" type="text" inputmode="decimal" value="0,43"></div>
-<div class="group"><div class="field"><label for="bloodLoss">Blodtab totalt (mL)</label><input id="bloodLoss" type="text" inputmode="decimal" value="900"></div>
-<div class="field"><label for="sagm">SAGM indgift (mL)</label><input id="sagm" type="text" inputmode="decimal" value="0"></div>
-<div class="field"><label for="cellSaver">Cell saver (mL)</label><input id="cellSaver" type="text" inputmode="decimal" value="0"></div></div>
-<div class="group"><div class="field"><label for="fluidLoss">Væsketab, fraset SAGM (mL)</label><input id="fluidLoss" type="text" inputmode="decimal" value="600"></div>
-<div class="field"><label for="fluidInput">Væskeindgift, fraset SAGM (mL)</label><input id="fluidInput" type="text" inputmode="decimal" value="1000"></div></div>
-<div class="group"><div class="field"><label for="hctCurrent">Aktuel hæmatokrit (kommatal)</label><input id="hctCurrent" type="text" inputmode="decimal" value="0,36"></div></div>
-<p class="note">Hæmatokrit indtastes som fx 0,36 (ikke 36). Både komma og punktum accepteres.</p>
-</section>
-<section class="card" aria-live="polite"><h2>Beregnede resultater</h2><div id="error" class="warning hidden" role="alert"></div>
-<div id="results"><div class="primary"><div class="metric">Ukendt væsketab / -tilførsel (mL)</div><div class="value" id="unknown">—</div><div class="hint">Afvigelsen mellem korrigeret og teoretisk blodvolumen. Fortegn og klinisk betydning skal fortolkes ud fra modellens antagelser.</div></div>
-<div class="result"><span>Blodvolumen før OP</span><strong id="bloodBefore">—</strong></div>
-<div class="result"><span>RBC før OP</span><strong id="rbcBefore">—</strong></div>
-<div class="result"><span>Blodstatus netto</span><strong id="bloodNet">—</strong></div>
-<div class="result"><span>RBC-status netto</span><strong id="rbcNet">—</strong></div>
-<div class="result"><span>Væskestatus netto (fraset SAGM)</span><strong id="fluidNet">—</strong></div>
-<div class="result"><span>Væskestatus totalt</span><strong id="totalNet">—</strong></div>
-<div class="result"><span>Teoretisk blodvolumen</span><strong id="theoretical">—</strong></div>
-<div class="result"><span>Beregnet hæmatokrit jf. væskestatus</span><strong id="expectedHct">—</strong></div>
-<div class="result"><span>Korrigeret blodvolumen ved aktuel hæmatokrit</span><strong id="corrected">—</strong></div></div></section></div>
-<section class="card assumptions"><h2>Modellens antagelser og begrænsninger</h2><ul>
-<li>Antaget hæmatokrit: blodtab <strong>0,4</strong>, SAGM <strong>0,3</strong>, cell saver <strong>0,6</strong>.</li>
-<li>Det antages, at blodtab og blodindgift er registreret korrekt.</li>
-<li>Korrigeret blodvolumen beregnes ud fra aktuel hæmatokrit i forhold til beregnet hæmatokrit.</li>
-<li>Afvigelsen kan afspejle registreringsfejl eller væskeforskydning til/fra blodbanen.</li>
-<li>Modellen tager ikke højde for hæmatokritændringer ved ændringer i det subglykokalyx-relaterede rum.</li>
-<li><strong>Vigtigt:</strong> Som i det originale regneark indgår cell saver i RBC-balancen, men <em>ikke</em> i blodstatus netto eller væskestatus totalt. Dette bør verificeres fagligt før klinisk anvendelse.</li>
-</ul><p class="foot">Beregneren gengiver formlerne i det indsendte regneark. Den er ikke klinisk valideret og bør ikke bruges som selvstændigt grundlag for behandlingsbeslutninger. Der gemmes eller sendes ingen indtastede værdier.</p></section>
-</main><script>
-'use strict';
-const defaults={idealWeight:'80',hctBefore:'0,43',bloodLoss:'900',sagm:'0',cellSaver:'0',fluidLoss:'600',fluidInput:'1000',hctCurrent:'0,36'};
-const ids=Object.keys(defaults);
-const formatVolume=new Intl.NumberFormat('da-DK',{maximumFractionDigits:1});
-const formatHct=new Intl.NumberFormat('da-DK',{minimumFractionDigits:4,maximumFractionDigits:4});
-function numberOf(id){const raw=document.getElementById(id).value.trim().replace(/\s/g,'').replace(',','.');if(raw==='')return NaN;return Number(raw)}
-function show(id,n,kind='mL'){document.getElementById(id).textContent=(kind==='hct'?formatHct.format(n):formatVolume.format(n)+' mL')}
-function calculate(){
- const v=Object.fromEntries(ids.map(id=>[id,numberOf(id)]));
- const errors=[];
- for(const id of ids){if(!Number.isFinite(v[id]))errors.push('Alle felter skal indeholde et gyldigt tal.');}
- if(!errors.length){if(v.idealWeight<=0)errors.push('Idealvægt skal være større end 0.');
- if(v.hctBefore<0||v.hctBefore>1||v.hctCurrent<=0||v.hctCurrent>1)errors.push('Præoperativ hæmatokrit skal være mellem 0 og 1, og aktuel hæmatokrit skal være større end 0 og højst 1.');
- for(const id of ['bloodLoss','sagm','cellSaver','fluidLoss','fluidInput'])if(v[id]<0){errors.push('Væske- og blodmængder må ikke være negative.');break;}}
- const err=document.getElementById('error');const res=document.getElementById('results');
- if(errors.length){err.textContent=[...new Set(errors)].join(' ');err.classList.remove('hidden');res.classList.add('hidden');return}
- const bloodBefore=v.idealWeight*60; // B3 = B1*60
- const rbcBefore=bloodBefore*v.hctBefore; // B4 = B3*B2
- const bloodNet=v.sagm-v.bloodLoss; // B9 = B7-B6
- const rbcNet=.3*v.sagm-.4*v.bloodLoss+.6*v.cellSaver; // B10
- const fluidNet=v.fluidInput-v.fluidLoss; // B13 = B12-B11
- const totalNet=bloodNet+fluidNet; // B15
- const theoretical=bloodBefore+totalNet; // B17
- if(theoretical<=0){err.textContent='Teoretisk blodvolumen er nul eller negativt. Beregningen kan ikke gennemføres.';err.classList.remove('hidden');res.classList.add('hidden');return}
- const expectedHct=(rbcBefore+rbcNet)/theoretical; // B19
- const corrected=expectedHct*theoretical/v.hctCurrent; // B20
- const unknown=corrected-theoretical; // B21
- if(!Number.isFinite(unknown)){err.textContent='Beregning ikke mulig med de valgte værdier.';err.classList.remove('hidden');res.classList.add('hidden');return}
- err.classList.add('hidden');res.classList.remove('hidden');
- show('unknown',unknown);show('bloodBefore',bloodBefore);show('rbcBefore',rbcBefore);show('bloodNet',bloodNet);show('rbcNet',rbcNet);show('fluidNet',fluidNet);show('totalNet',totalNet);show('theoretical',theoretical);show('expectedHct',expectedHct,'hct');show('corrected',corrected);
+<!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Væskeberegning</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:#172d3b;font:16px/1.6 system-ui,sans-serif}main{max-width:1050px;margin:auto;padding:32px 20px}h1{margin:0;font-size:34px}h2{font-size:21px;margin-top:0}.intro{max-width:780px;color:#4b606d}.grid{display:grid;grid-template-columns:1fr 1.2fr;gap:24px}.card{background:white;border:1px solid #dbe3e8;border-radius:14px;padding:24px;margin-bottom:24px}label{display:block;margin:0 0 16px;font-weight:600}input{display:block;width:100%;margin-top:5px;padding:10px;border:1px solid #9badb8;border-radius:6px;font:inherit}input:focus{outline:3px solid #b9dce9}button{background:#126178;color:white;border:0;border-radius:6px;padding:11px 18px;font:inherit;cursor:pointer}table{width:100%;border-collapse:collapse}th,td{padding:12px 0;border-bottom:1px solid #e3e9ed}th{text-align:left;font-weight:500;padding-right:15px}td{text-align:right;white-space:nowrap;font-weight:650}tr:last-child{color:#126178}#status{color:#685020;margin:0 0 12px}li{margin-bottom:8px}a{color:#126178}@media(max-width:720px){.grid{grid-template-columns:1fr}main{padding:22px 14px}.card{padding:18px}h1{font-size:29px}}</style></head><body><main><h1>Væskeberegning</h1><p class="intro">Denne side tillader basal beregning af, hvor meget ukendt, der er tilført eller forsvundet fra en patients blodbane over tid – fx perioperativt.</p><div class="grid"><section class="card"><h2>Indtast værdier</h2><label for="B1">Idealvægt (kg)<input id="B1" type="number" value="0" min="0" step="any"></label><label for="B2">Hæmatokrit før anæstesi (kommatal)<input id="B2" type="number" value="0" min="0" max="1" step="0.01"></label><label for="B6">Blodtab totalt (mL)<input id="B6" type="number" value="0" min="0" step="any"></label><label for="B7">SAGM indgift (mL)<input id="B7" type="number" value="0" min="0" step="any"></label><label for="B8">Cell saver (mL)<input id="B8" type="number" value="0" min="0" step="any"></label><label for="B11">Væsketab (alt fraset SAGM) (mL)<input id="B11" type="number" value="0" min="0" step="any"></label><label for="B12">Væskeindgift (alt fraset SAGM) (mL)<input id="B12" type="number" value="0" min="0" step="any"></label><label for="B18">Hæmatokrit aktuelt<input id="B18" type="number" value="0" min="0" max="1" step="0.01"></label><button id="reset" type="button">Nulstil alle værdier</button></section><section class="card"><h2>Beregnede resultater</h2><p id="status" role="status" aria-live="polite"></p><table><tbody><tr><th scope="row">Blodvolumen før OP (mL)</th><td id="out3">—</td></tr><tr><th scope="row">Heraf RBC (mL)</th><td id="out4">—</td></tr><tr><th scope="row">Blod status netto</th><td id="out9">—</td></tr><tr><th scope="row">Heraf RBC</th><td id="out10">—</td></tr><tr><th scope="row">Væskestatus netto (fraset SAGM)</th><td id="out13">—</td></tr><tr><th scope="row">Væskestatus totalt</th><td id="out15">—</td></tr><tr><th scope="row">Blodlumen teoretisk (jf præOP blodvolumen & aktuel væskestatus)</th><td id="out17">—</td></tr><tr><th scope="row">Hæmatokrit burde være jf væskestatus</th><td id="out19">—</td></tr><tr><th scope="row">Aktuelt beregnet, korrigeret blodvolumen1</th><td id="out20">—</td></tr><tr><th scope="row">Ukendt væsketab/gain (tyndt)</th><td id="out21">—</td></tr></tbody></table><p>Positiv afvigelse angiver et større beregnet blodvolumen end det teoretiske; negativ afvigelse angiver et mindre.</p></section></div><section class="card"><h2>Modellens antagelser og begrænsninger</h2><ul><li>Antaget hæmatokrit: blodtab <strong>0,4</strong>, SAGM <strong>0,3</strong>, cell saver <strong>0,6</strong>.</li><li>Det antages, at blodtab og blodindgift er registreret korrekt.</li><li>Korrigeret blodvolumen beregnes ud fra aktuel hæmatokrit i forhold til beregnet hæmatokrit.</li><li>Afvigelsen kan afspejle registreringsfejl eller væskeforskydning til/fra blodbanen.</li><li>Modellen tager ikke højde for hæmatokritændringer ved ændringer i det subglykokalyx-relaterede rum.</li><li><strong>Vigtigt:</strong> Som i det nye regneark indgår cell saver i RBC-balancen, blodstatus netto og væskestatus totalt. Modellens antagelser bør verificeres fagligt før klinisk anvendelse.</li></ul><p>Alle kommentarer er velkomne og bedes sendt til <a href="mailto:petjuh@rm.dk">petjuh@rm.dk</a>.</p><p>Beregninger udføres lokalt i din browser. Indtastede værdier gemmes eller sendes ikke.</p></section></main><script>
+const inputRows=[1,2,6,7,8,11,12,18], outputRows=[3,4,9,10,13,15,17,19,20,21];
+function calculate(b){
+ const v={...b};
+ v[3]=v[1]*60;v[4]=v[3]*v[2];v[9]=v[7]+v[8]-v[6];v[10]=0.3*v[7]-0.4*v[6]+0.6*v[8];v[13]=v[12]-v[11];v[15]=v[9]+v[13];v[17]=v[3]+v[15];
+ v[19]=v[17]>0?(v[4]+v[10])/v[17]:NaN;
+ v[20]=v[18]>0?v[19]*v[17]/v[18]:NaN;v[21]=v[20]-v[17];return v;
 }
-ids.forEach(id=>document.getElementById(id).addEventListener('input',calculate));
-document.getElementById('reset').addEventListener('click',()=>{ids.forEach(id=>document.getElementById(id).value=defaults[id]);calculate()});
-calculate();
+function update(){const b={};let valid=true;for(const r of inputRows){const el=document.getElementById('B'+r);b[r]=el.value===''?NaN:Number(el.value);if(!el.validity.valid||!Number.isFinite(b[r]))valid=false;}const v=calculate(b);const ready=valid&&b[1]>0&&b[2]>0&&b[18]>0&&v[17]>0;document.getElementById('status').textContent=!valid?'Indtast gyldige, ikke-negative værdier. Hæmatokrit skal være mellem 0 og 1.':!ready?'Indtast idealvægt og begge hæmatokritværdier over 0. Teoretisk blodvolumen skal være over 0.':v[19]<0||v[19]>1?'Beregnet hæmatokrit ligger uden for intervallet 0–1. Kontrollér værdierne.':'';for(const r of outputRows){const n=v[r];document.getElementById('out'+r).textContent=valid&&Number.isFinite(n)&&(![19,20,21].includes(r)||ready)?n.toLocaleString('da-DK',{minimumFractionDigits:r===19?3:0,maximumFractionDigits:r===19?3:1})+(r===19?'':' mL'):'—';}}
+for(const r of inputRows)document.getElementById('B'+r).addEventListener('input',update);
+document.getElementById('reset').addEventListener('click',()=>{for(const r of inputRows)document.getElementById('B'+r).value='0';update();});update();
 </script></body></html>
