@@ -8,3 +8,4 @@ Er resultatet negativt, kan der være flere årsager, fx:
 - Dannelse af pleuravæske
 - Væskeakkumulation i GI trakten
 - Falsk lav dokumentation af væskeindgift
+Alle kommentarer er velkomne er bedes sendt til petjuh@rm.dk
