@@ -41,8 +41,8 @@
 <tr><th scope="row">Uerkendt plasmatab (-) eller plasmaoverskud (+)</th><td id="out25table">—</td></tr>
 </tbody></table></section></div>
 <section class="card">
-<p>Denne side giver en basal beregning af hvor meget i plasmafasen, der er tilført eller forsvundet fra en patients blodbane over tid - fx perioperativt.</p>
-<p>Antagelse: Blodtab, SAGM og Cell saver har hæmatokrit hhv 0,35, 0,3 og 0,6.</p>
+<p>Denne side tillader basal beregning af, hvor meget ukendt, der er tilført eller forsvundet fra en patients blodbane over tid - fx perioperativt.</p>
+<p>Antagelse: Blodtab, SAGM og Cell saver har hæmatokrit hhv 0,35, 0,6 og 0,6.</p>
 <p>Antagelse: Blodtab og -indgift er målt korrekt</p>
 <p>Der tages ikke hensyn til fluktuation af hæmatokrit ved ændret subglukokalyx rum</p>
 <p>Hæmatokrit værdier skal være målt enten arterielt eller venøst (Hamburger effekt)</p>
@@ -65,7 +65,7 @@ function calculate(b,sex){
  v[7]=v[5]*v[6];
  v[12]=v[11]-v[10];
  v[16]=v[14]+v[15]-v[13];
- v[17]=-0.35*v[13]+0.3*v[14]+0.6*v[15];
+ v[17]=-0.35*v[13]+0.6*v[14]+0.6*v[15];
  v[21]=v[16]+v[12];
  v[22]=v[6]+v[21];
  v[23]=v[22]>0?(v[7]+v[17])/v[22]:NaN;
