@@ -17,7 +17,7 @@
 <label for="B4">Vægt (kg)<input id="B4" type="number" value="0" min="0" step="any"></label>
 <label for="B5">Hæmatokrit (kommatal)<input id="B5" type="number" value="0" min="0" max="1" step="any"></label>
 <h3 class="section-title">Efter event (fx operation)</h3>
-<label for="B10">Væsketab (alt fraset SAGM, cell-saver) (mL)<input id="B10" type="number" value="0" min="0" step="any"></label>
+<label for="B10">Væsketab (alt fraset blødning)<input id="B10" type="number" value="0" min="0" step="any"></label>
 <label for="B11">Væskeindgift (alt fraset SAGM, cell-saver) (mL)<input id="B11" type="number" value="0" min="0" step="any"></label>
 <label for="B13">Blodtab totalt (mL)<input id="B13" type="number" value="0" min="0" step="any"></label>
 <label for="B14">SAGM indgift (mL)<input id="B14" type="number" value="0" min="0" step="any"></label>
@@ -30,25 +30,25 @@
 <tr><th scope="row">Blodvolumen før OP (mL)</th><td id="out6">—</td></tr>
 <tr><th scope="row">Heraf RBC (mL)</th><td id="out7">—</td></tr></tbody></table>
 <h3 class="section-title">Efter event (fx operation)</h3><table><tbody>
-<tr><th scope="row">Væskestatus netto (fraset SAGM, cell-saver)</th><td id="out12">—</td></tr>
-<tr><th scope="row">Blod status netto</th><td id="out16">—</td></tr>
+<tr><th scope="row">Væskestatus netto (alt fraset tranfusion med SAGM og cell-saver og blødning)</th><td id="out12">—</td></tr>
+<tr><th scope="row">Blodstatus netto</th><td id="out16">—</td></tr>
 <tr><th scope="row">Heraf RBC (mL)</th><td id="out17">—</td></tr></tbody></table>
 <h3 class="section-title">Afledte værdier</h3><table><tbody>
 <tr><th scope="row">Væskestatus totalt</th><td id="out21">—</td></tr>
 <tr><th scope="row">Blodlumen konventionelt beregnet (indgift - tab)</th><td id="out22">—</td></tr>
-<tr><th scope="row">Teoretisk hæmatokrit (Indgift - udgift)</th><td id="out23">—</td></tr>
+<tr><th scope="row">Teoretisk hæmatokrit (beregnet fra indgift - tab)</th><td id="out23">—</td></tr>
 <tr><th scope="row">Blodvolumen korrigeret efter målt hæmatokrit</th><td id="out24">—</td></tr>
 <tr><th scope="row">Uerkendt plasmatab (-) eller plasmaoverskud (+)</th><td id="out25table">—</td></tr>
 </tbody></table></section></div>
 <section class="card">
-<p>Denne side tillader basal beregning af, hvor meget ukendt, der er tilført eller forsvundet fra en patients blodbane over tid - fx perioperativt.</p>
-<p>Antagelse: Blodtab, SAGM og Cell saver har hæmatokrit hhv 0,35, 0,6 og 0,6.</p>
+<p>Denne side tillader basal beregning af, hvor meget ukendt, der er tilført eller forsvundet fra en patients plasmafase over tid - fx perioperativt.</p>
+<p>Antagelse: Blodtab, SAGM og cell-saver har hæmatokrit hhv 0,35, 0,6 og 0,6.</p>
 <p>Antagelse: Blodtab og -indgift er målt korrekt</p>
 <p>Der tages ikke hensyn til fluktuation af hæmatokrit ved ændret subglukokalyx rum</p>
 <p>Hæmatokrit værdier skal være målt enten arterielt eller venøst (Hamburger effekt)</p>
 <p>Ved plasmaoverskud kan der være flere årsager, fx:</p><ul>
 <li>Fejlbehæftede målinger af tilført eller tabt væske (fraset SAGM, cell-saver)</li>
-<li>Fejlbehæftede målinger af tilført eller tabt blod (SAGM, cell-saver)</li></ul>
+<li>Fejlbehæftede målinger af tilført eller tabt blod (SAGM, cell-saver, blødning)</li></ul>
 <p>Ved plasmatab kan der være flere årsager, fx:</p><ul>
 <li>Tab af væske fra blodbanen til interstitialrummet</li>
 <li>Dannelse af pleuravæske</li>
