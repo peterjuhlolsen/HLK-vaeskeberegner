@@ -15,14 +15,16 @@
 <label for="B2">Køn<select id="B2"><option value="">Vælg køn</option><option value="Mand">Mand</option><option value="Kvinde">Kvinde</option></select></label>
 <label for="B3">Højde (cm)<input id="B3" type="number" value="0" min="0" step="any"></label>
 <label for="B4">Vægt (kg)<input id="B4" type="number" value="0" min="0" step="any"></label>
-<label for="B5">Hæmatokrit (kommatal)<input id="B5" type="number" value="0" min="0" max="1" step="any"></label>
+<label for="B5">Hæmatokrit (kommatal)<input id="B5" type="number" value="" min="0" max="1" step="any"></label>
+<label for="HbBefore">Hvis hæmatokrit er ukendt, indsæt hæmoglobin (mmol/L)<input id="HbBefore" type="number" value="" min="0" step="any"></label>
 <h3 class="section-title">Efter event (fx operation)</h3>
 <label for="B10">Væsketab (alt fraset blødning)<input id="B10" type="number" value="0" min="0" step="any"></label>
 <label for="B11">Væskeindgift (alt fraset SAGM, cell-saver) (mL)<input id="B11" type="number" value="0" min="0" step="any"></label>
 <label for="B13">Blodtab totalt (mL)<input id="B13" type="number" value="0" min="0" step="any"></label>
 <label for="B14">SAGM indgift (mL)<input id="B14" type="number" value="0" min="0" step="any"></label>
 <label for="B15">Cell-saver indgift (mL)<input id="B15" type="number" value="0" min="0" step="any"></label>
-<label for="B18">Hæmatokrit<input id="B18" type="number" value="0" min="0" max="1" step="any"></label>
+<label for="B18">Hæmatokrit<input id="B18" type="number" value="" min="0" max="1" step="any"></label>
+<label for="HbAfter">Hvis hæmatokrit er ukendt, indsæt hæmoglobin (mmol/L)<input id="HbAfter" type="number" value="" min="0" step="any"></label>
 <button id="reset" type="button">Nulstil alle værdier</button>
 </section>
 <section class="card"><h2>Beregnede resultater</h2>
@@ -72,19 +74,57 @@ function calculate(b,sex){
  v[25]=v[24]-v[22];
  return v;
 }
+function readNumber(id){
+ const el=document.getElementById(id);
+ const raw=el.value.trim();
+ return {value:raw===''?NaN:Number(raw),present:raw!=='',valid:el.validity.valid&&(raw===''||Number.isFinite(Number(raw)))};
+}
+// Hæmatokrit (som andel 0–1) prioriteres over hæmoglobin.
+// Hb × 4,83 giver hæmatokrit i procent; divider med 100 til kommatal.
+function effectiveHematocrit(hct,hb){
+ if(hct.present)return hct.value;
+ if(hb.present)return hb.value*4.83/100;
+ return NaN;
+}
 function update(){
  const b={};let valid=true;
- for(const r of numericInputs){const el=document.getElementById('B'+r);b[r]=el.value.trim()===''?NaN:Number(el.value);if(!el.validity.valid||!Number.isFinite(b[r]))valid=false;}
+ for(const r of numericInputs){
+   if(r===5||r===18)continue;
+   const field=readNumber('B'+r);
+   b[r]=field.value;
+   if(!field.valid||!field.present)valid=false;
+ }
+ const hctBefore=readNumber('B5'),hctAfter=readNumber('B18');
+ const hbBefore=readNumber('HbBefore'),hbAfter=readNumber('HbAfter');
+ // Anvend kun den valgte kilde til at afgøre, om hæmatokrit er gyldig.
+ for(const [hct,hb] of [[hctBefore,hbBefore],[hctAfter,hbAfter]]){
+   const selected=hct.present?hct:hb;
+   if(!selected.valid)valid=false;
+ }
+ b[5]=effectiveHematocrit(hctBefore,hbBefore);
+ b[18]=effectiveHematocrit(hctAfter,hbAfter);
  const sex=document.getElementById('B2').value;
  const v=calculate(b,sex);
- const beforeReady=valid&&!!sex&&b[3]>0&&b[4]>0&&b[5]>0;
- const afterReady=beforeReady&&b[18]>0&&v[22]>0;
- const status=!valid?'Indtast gyldige, ikke-negative værdier. Hæmatokrit skal være mellem 0 og 1.':!sex||b[3]<=0||b[4]<=0||b[5]<=0?'Vælg køn, og indtast højde, vægt og hæmatokrit før event over 0.':b[18]<=0||v[22]<=0?'Indtast aktuel hæmatokrit over 0. Konventionelt beregnet blodvolumen skal være over 0.':v[23]<0||v[23]>1?'Beregnet teoretisk hæmatokrit ligger uden for intervallet 0–1. Kontrollér værdierne.':'';
+ const beforeReady=valid&&!!sex&&b[3]>0&&b[4]>0&&b[5]>0&&b[5]<=1;
+ const afterReady=beforeReady&&b[18]>0&&b[18]<=1&&v[22]>0;
+ const status=!valid?'Indtast gyldige, ikke-negative værdier. Hæmatokrit skal være mellem 0 og 1.':!sex||b[3]<=0||b[4]<=0||!(b[5]>0&&b[5]<=1)?'Vælg køn, og indtast højde, vægt og enten hæmatokrit eller hæmoglobin før event.':!(b[18]>0&&b[18]<=1)||v[22]<=0?'Indtast enten hæmatokrit eller hæmoglobin efter event. Konventionelt beregnet blodvolumen skal være over 0, og beregnet hæmatokrit mellem 0 og 1.':v[23]<0||v[23]>1?'Beregnet teoretisk hæmatokrit ligger uden for intervallet 0–1. Kontrollér værdierne.':'';
  document.getElementById('status').textContent=status;
- for(const r of outputRows){const n=v[r];const needs=([23,24,25].includes(r)?afterReady:([6,7,22].includes(r)?beforeReady:valid));const txt=needs&&Number.isFinite(n)?n.toLocaleString('da-DK',{minimumFractionDigits:r===23?3:0,maximumFractionDigits:r===23?3:1})+(r===23?'':' mL'):'—';if(r===25){document.getElementById('out25table').textContent=txt;document.getElementById('out25').textContent=txt;}else document.getElementById('out'+r).textContent=txt;}
+ for(const r of outputRows){
+   const n=v[r];
+   const needs=([23,24,25].includes(r)?afterReady:([6,7,22].includes(r)?beforeReady:valid));
+   const txt=needs&&Number.isFinite(n)?n.toLocaleString('da-DK',{minimumFractionDigits:r===23?3:0,maximumFractionDigits:r===23?3:1})+(r===23?'':' mL'):'—';
+   if(r===25){document.getElementById('out25table').textContent=txt;document.getElementById('out25').textContent=txt;}
+   else document.getElementById('out'+r).textContent=txt;
+ }
 }
-function resetInputs(){for(const r of numericInputs)document.getElementById('B'+r).value='0';document.getElementById('B2').value='';update();}
+function resetInputs(){
+ for(const r of numericInputs)document.getElementById('B'+r).value=(r===5||r===18)?'':'0';
+ document.getElementById('HbBefore').value='';
+ document.getElementById('HbAfter').value='';
+ document.getElementById('B2').value='';update();
+}
 for(const r of numericInputs)document.getElementById('B'+r).addEventListener('input',update);
+for(const id of ['HbBefore','HbAfter'])document.getElementById(id).addEventListener('input',update);
 document.getElementById('B2').addEventListener('change',update);
 document.getElementById('reset').addEventListener('click',resetInputs);
 window.addEventListener('pageshow',resetInputs);
